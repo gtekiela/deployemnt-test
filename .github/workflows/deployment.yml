@@ -1,0 +1,51 @@
+name: Deploy
+
+on: [push]
+
+permissions:
+  id-token: write
+  contents: write
+  
+jobs:
+  deploy:
+    name: Deploy my app
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      
+      - name: Debug env
+        run: printenv | sort
+
+      - uses: chrnorm/deployment-action@v2
+        name: Create GitHub deployment
+        id: deployment
+        with:
+          token: '${{ github.token }}'
+          environment-url: http://my-app-url.com
+          environment: production
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: '${{ github.token }}'
+          description: ${{ github.head_ref }}
+          sha: ${{ github.sha }}
+          ref: ${{ github.ref_name }}
+          environment-url: ${{ steps.deployment.outputs.environment_url }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: 'success'
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: '${{ github.token }}'
+          description: ${{ github.head_ref }}
+          sha: ${{ github.sha }}
+          ref: ${{ github.ref_name }}
+          environment-url: ${{ steps.deployment.outputs.environment_url }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: 'failure'
