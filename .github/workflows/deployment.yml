@@ -14,9 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      
-      - name: Debug env
-        run: printenv | sort
 
       - uses: chrnorm/deployment-action@v2
         name: Create GitHub deployment
@@ -26,6 +23,9 @@ jobs:
           description: ${{ github.ref_name }}
           environment-url: http://my-app-url.com
           environment: production
+          
+      - name: Debug env
+        run: printenv | sort
 
       - name: Update deployment status (success)
         if: success()
